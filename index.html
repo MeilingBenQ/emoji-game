@@ -2,34 +2,66 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emoji 搶答大賽 Pro</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --primary: #6c5ce7; --accent: #fdcb6e; --danger: #ff7675; --success: #55efc4; --dark: #2d3436; }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: radial-gradient(circle, #6c5ce7 0%, #4834d4 100%); color: white; margin: 0; padding: 20px 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        /* 1. Logo 尺寸調整 */
-        .header-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .event-logo { width: 150px; height: 150px; object-fit: contain; }
-        .event-title { font-size: 2.5rem; font-weight: 900; color: var(--accent); text-shadow: 3px 3px 0px #d35400; margin: 0; }
+        /* 手機優先佈局 */
+        body { 
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; 
+            background: radial-gradient(circle, #6c5ce7 0%, #4834d4 100%); 
+            color: white; margin: 0; padding: 10px 0; 
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            touch-action: manipulation; /* 防止手機點擊延遲 */
+        }
         
-        .card { background: white; color: var(--dark); padding: 30px; border-radius: 30px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; }
+        .header-container { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 15px; }
+        .event-logo { width: 120px; height: 120px; object-fit: contain; } /* 手機版稍縮小 */
+        .event-title { font-size: 2rem; font-weight: 900; color: var(--accent); text-shadow: 2px 2px 0px #d35400; margin: 0; }
+        
+        .card { 
+            background: white; color: var(--dark); padding: 20px; 
+            border-radius: 25px; width: 88%; max-width: 450px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); text-align: center;
+            z-index: 10;
+        }
+        
         .hidden { display: none !important; }
-        .instruction-box { text-align: left; background: #f1f2f6; padding: 20px; border-radius: 15px; color: #444; line-height: 1.8; margin-bottom: 15px; font-size: 1rem; }
-        .emoji-box { font-size: 80px; margin: 20px 0; min-height: 130px; display: flex; justify-content: center; align-items: center; background: #f1f2f6; border-radius: 20px; }
-        input, select { padding: 12px; font-size: 1.1rem; width: 85%; margin: 10px 0; border: 3px solid #dfe6e9; border-radius: 12px; text-align: center; }
-        button { background: var(--accent); color: #d35400; border: none; padding: 12px 25px; font-size: 1.1rem; border-radius: 50px; cursor: pointer; font-weight: 900; box-shadow: 0 5px 0 #e67e22; margin: 10px; }
+        .instruction-box { text-align: left; background: #f1f2f6; padding: 15px; border-radius: 12px; color: #444; line-height: 1.6; margin-bottom: 15px; font-size: 0.95rem; }
+        .emoji-box { font-size: 70px; margin: 15px 0; min-height: 120px; display: flex; justify-content: center; align-items: center; background: #f1f2f6; border-radius: 15px; }
+        
+        input, select { 
+            padding: 15px; font-size: 1rem; width: 90%; margin: 10px 0; 
+            border: 2px solid #dfe6e9; border-radius: 10px; text-align: center;
+            appearance: none; -webkit-appearance: none; /* 移除手機預設陰影 */
+        }
+        
+        /* 加大按鈕點擊範圍供手機操作 */
+        button { 
+            background: var(--accent); color: #d35400; border: none; 
+            padding: 15px 25px; font-size: 1.1rem; border-radius: 50px; 
+            cursor: pointer; font-weight: 900; box-shadow: 0 5px 0 #e67e22; 
+            margin: 10px 5px; -webkit-tap-highlight-color: transparent;
+        }
         button:active { transform: translateY(3px); box-shadow: 0 2px 0 #e67e22; }
-        .host-fixed-tools { position: fixed; bottom: 15px; right: 15px; background: rgba(0, 0, 0, 0.85); padding: 15px; border-radius: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; }
-        .btn-sm { font-size: 0.8rem; padding: 8px; margin: 0; }
-        .lb-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .lb-cell { padding: 12px 5px; font-size: 1.1rem; border-bottom: 1px solid #eee; }
-        .top-1 { color: #f1c40f; font-size: 1.5rem; font-weight: bold; }
-        #view-admin-qs { color: var(--dark); text-align: left; max-height: 70vh; overflow-y: auto; }
+
+        /* 修正右下角管理面板在手機端可能被遮擋或太小的問題 */
+        .host-fixed-tools { 
+            position: fixed; bottom: 10px; right: 10px; 
+            background: rgba(0, 0, 0, 0.9); padding: 12px; border-radius: 15px; 
+            display: flex; flex-direction: column; gap: 8px; z-index: 9999;
+        }
+        .btn-sm { font-size: 0.8rem; padding: 10px; margin: 0; min-width: 100px; }
+        
+        .lb-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .lb-cell { padding: 10px 5px; font-size: 1rem; border-bottom: 1px solid #eee; }
+        .top-1 { color: #f1c40f; font-size: 1.3rem; font-weight: bold; }
+        
+        #view-admin-qs { color: var(--dark); text-align: left; max-height: 60vh; overflow-y: auto; }
         .q-item { border-bottom: 1px solid #ddd; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .btn-restore { background: #95a5a6; color: white; box-shadow: 0 5px 0 #7f8c8d; font-size: 0.9rem; width: 100%; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -40,22 +72,22 @@
     </div>
 
     <div id="host-global-tools" class="host-fixed-tools hidden">
-        <span style="font-size: 0.8rem; color: var(--accent);">👑 管理員控制台</span>
-        <button onclick="goTo('view-admin-qs')" class="btn-sm" style="background: #a29bfe; color: #2d3436; box-shadow: 0 3px 0 #6c5ce7;">📚 題庫維護</button>
-        <button onclick="hardResetGame()" class="btn-sm" style="background: var(--danger); color: white; box-shadow: 0 3px 0 #c0392b;">🔄 重置遊戲</button>
+        <span style="font-size: 0.75rem; color: var(--accent); text-align:center;">👑 管理控制</span>
+        <button id="btn-admin-qs" class="btn-sm" style="background: #a29bfe; color: #2d3436;">📚 題庫維護</button>
+        <button id="btn-hard-reset" class="btn-sm" style="background: var(--danger); color: white;">🔄 重置遊戲</button>
     </div>
 
     <div class="card">
         <div id="view-login">
-            <h2 style="color: var(--primary);">準備好搶答了嗎？</h2>
-            <input type="text" id="username" placeholder="請輸入姓名">
+            <h2 style="color: var(--primary); margin-top: 0;">歡迎參加！</h2>
+            <input type="text" id="username" placeholder="請輸入姓名" inputmode="text">
             <button id="btn-join">下一頁</button>
         </div>
 
         <div id="view-setup" class="hidden">
             <h2 style="color: var(--primary);">遊戲設定</h2>
             <p>欲抽取題數：</p>
-            <input type="number" id="q-count" value="10">
+            <input type="number" id="q-count" value="10" inputmode="numeric">
             <button id="btn-to-instruction">前往說明頁</button>
         </div>
 
@@ -67,9 +99,9 @@
                 範例題目：👀🎵 ➔ 答案：<b>觀音</b><br>
                 範例題目：⬇️🏘️ ➔ 答案：<b>南庄</b>
             </div>
-            <img src="qrcode.png" alt="QR Code" class="qr-code" style="width:180px; margin:15px auto; display:block;" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(window.location.href.split('?')[0])">
+            <img id="qr-display" src="qrcode.png" alt="QR Code" style="width:160px; margin:10px auto; display:block;" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(window.location.href.split('?')[0])">
             <div id="host-start-btn" class="hidden">
-                <button id="btn-real-start" style="background:var(--success); color:#006266; box-shadow:0 5px 0 #009432;">🎮 開始遊戲</button>
+                <button id="btn-real-start" style="background:var(--success); color:#006266;">🎮 開始遊戲</button>
             </div>
             <p id="wait-msg">等待主持人開始...</p>
         </div>
@@ -78,12 +110,12 @@
             <div id="q-header" style="font-weight:bold; color:var(--primary);"></div>
             <div id="q-emoji" class="emoji-box"></div>
             <div id="player-zone" class="hidden">
-                <input type="text" id="ans-input" placeholder="請輸入答案">
+                <input type="text" id="ans-input" placeholder="請輸入答案" autocomplete="off">
                 <button id="btn-submit">送出！</button>
-                <p id="feedback" style="color:var(--danger); font-weight:bold;"></p>
+                <p id="feedback" style="color:var(--danger); font-weight:bold; min-height:1.2em;"></p>
             </div>
             <div id="win-notification" class="hidden">
-                <div style="background:var(--success); color:#006266; padding:15px; border-radius:15px; font-weight:bold;">🎉 <span id="win-player-name"></span> 答對了！</div>
+                <div style="background:var(--success); color:#006266; padding:15px; border-radius:15px; font-weight:bold;">🎉 <span id="win-player-name"></span> 搶到了！</div>
             </div>
             <div id="ans-reveal" class="hidden" style="background:#e1f5fe; padding:15px; border-radius:20px; margin-top:10px;">
                 <h3 style="margin:0;">正解：<span id="correct-ans" style="color:#0288d1;"></span></h3>
@@ -98,22 +130,20 @@
             <h2 style="color:var(--primary);">🏆 榮譽排行榜</h2>
             <table class="lb-table"><tbody id="leaderboard-body"></tbody></table>
             <div id="host-reset-area" class="hidden">
-                <button onclick="hardResetGame()" style="background:#dfe6e9; color:#636e72; margin-top:30px;">🔄 結束並重置</button>
+                <button id="btn-finish-reset" style="background:#dfe6e9; color:#636e72; margin-top:20px;">🔄 結束並重置</button>
             </div>
         </div>
 
         <div id="view-admin-qs" class="hidden">
             <h3 style="color: var(--primary);">📚 題庫維護</h3>
             <div style="border: 2px solid #eee; padding: 10px; border-radius: 10px; margin-bottom: 15px;">
-                <input type="text" id="new-q-emoji" placeholder="Emoji (例: 🐲♨️)" style="width:40%">
-                <input type="text" id="new-q-ans" placeholder="答案 (例: 龍潭)" style="width:40%">
-                <button onclick="addQuestion()" style="font-size:0.8rem; padding:5px 15px;">新增</button>
+                <input type="text" id="new-q-emoji" placeholder="Emoji">
+                <input type="text" id="new-q-ans" placeholder="答案">
+                <button id="btn-add-q" style="font-size:0.9rem; padding:10px;">新增</button>
             </div>
-            <div id="qs-list">載入題庫中...</div>
-            
-            <button class="btn-restore" onclick="restoreDefaultQuestions()">♻️ 恢復預設題庫 (34題)</button>
-            
-            <button onclick="goTo('view-login')" style="background:var(--dark); color:white; width:100%;">返回遊戲</button>
+            <div id="qs-list" style="max-height: 200px; overflow-y: auto;">載入中...</div>
+            <button id="btn-restore-qs" style="background: #95a5a6; color: white; width: 100%; font-size: 0.9rem;">♻️ 恢復預設題庫</button>
+            <button id="btn-back-game" style="background:var(--dark); color:white; width:100%;">返回</button>
         </div>
     </div>
 
@@ -138,90 +168,71 @@
             { emoji: "🪑橋", answer: "板橋" }, { emoji: "🆕🏠", answer: "新屋" }, { emoji: "🆕🛒", answer: "新店" },
             { emoji: "3️⃣⛰️", answer: "三峽" }, { emoji: "🥇⛰️", answer: "金山" }, { emoji: "5️⃣🦴", answer: "五股" },
             { emoji: "7️⃣🚧", answer: "七堵" }, { emoji: "💎⛰️", answer: "寶山" }, { emoji: "獅🦁 ♨️", answer: "獅潭" },
-            { emoji: "⬇️⚓", answer: "南港" }, { emoji: "🐘🤰", answer: "大肚" }, { emoji: "鹿🦌⚓", answer: "鹿港" },
+            { emoji: "⬇️⚓", answer: "南港" }, { emoji: "象🐘🤰", answer: "大肚" }, { emoji: "鹿🦌⚓", answer: "鹿港" },
             { emoji: "2️⃣🌲", answer: "二林" }, { emoji: "2️⃣💧", answer: "二水" }, { emoji: "🎋⛰️", answer: "竹山" },
-            { emoji: "4️⃣♨️", answer: "四湖" }, { emoji: "🐘🌲", answer: "大林" }, { emoji: "🆕⚓", answer: "新港" },
+            { emoji: "4️⃣♨️", answer: "四湖" }, { emoji: "象🐘🌲", answer: "大林" }, { emoji: "🆕⚓", answer: "新港" },
             { emoji: "6️⃣🦵", answer: "六腳" }, { emoji: "鹿🦌🌱", answer: "鹿草" }, { emoji: "🧂💧", answer: "鹽水" },
             { emoji: "3️⃣🧑‍🤝‍🧑", answer: "三民" }, { emoji: "旗🚩🖌️", answer: "旗山" }, { emoji: "6️⃣🐢", answer: "六龜" },
             { emoji: "➡️⚓", answer: "東港" }, { emoji: "♾️🌸", answer: "恆春" }, { emoji: "🦁", answer: "獅子" },
-            { emoji: "🌺", answer: "牡丹" }, { emoji: "3️⃣⭐", answer: "三星" }, { emoji: "🐘⚔️", answer: "大武" },
+            { emoji: "🌺", answer: "牡丹" }, { emoji: "3️⃣⭐", answer: "三星" }, { emoji: "象🐘⚔️", answer: "大武" },
             { emoji: "7️⃣ 🧜", answer: "七美" }
         ];
 
         function goTo(id) {
             document.querySelectorAll('.card > div').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
+            window.scrollTo(0,0);
         }
 
         function hardResetGame() {
-            if(confirm("確定重置遊戲並清空分數？")) {
+            if(confirm("確定重置遊戲？")) {
                 db.ref('game').remove();
                 db.ref('players').remove();
                 location.href = location.pathname + (isHost ? "?host=true" : "");
             }
         }
 
-        // 2. 恢復預設題庫邏輯
-        function restoreDefaultQuestions() {
-            if(confirm("這將刪除目前所有題目並恢復為原本的 34 題，確定嗎？")) {
-                db.ref('questions').remove().then(() => {
-                    defaultQs.forEach(q => db.ref('questions').push(q));
-                    alert("題庫已恢復預設！");
-                });
+        // 手機事件綁定優化
+        function bind(id, fn) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.onclick = (e) => { e.preventDefault(); fn(e); };
             }
         }
 
         db.ref('questions').on('value', snap => {
             const data = snap.val();
-            if(!data && isHost) {
-                defaultQs.forEach(q => db.ref('questions').push(q));
-                return;
-            }
+            if(!data && isHost) { defaultQs.forEach(q => db.ref('questions').push(q)); return; }
             localQuestions = [];
             let html = "";
             for(let id in data) {
                 localQuestions.push({id, ...data[id]});
-                html += `<div class="q-item">
-                    <span>${data[id].emoji} = ${data[id].answer}</span>
-                    <button onclick="deleteQuestion('${id}')" class="btn-sm" style="background:var(--danger); color:white; box-shadow:none;">刪除</button>
-                </div>`;
+                html += `<div class="q-item"><span>${data[id].emoji} = ${data[id].answer}</span><button onclick="deleteQuestion('${id}')" style="background:var(--danger); color:white; padding:5px 10px; font-size:0.7rem; box-shadow:none;">刪除</button></div>`;
             }
-            document.getElementById('qs-list').innerHTML = html || "目前無題目";
+            document.getElementById('qs-list').innerHTML = html || "無題目";
         });
 
-        function addQuestion() {
-            const emoji = document.getElementById('new-q-emoji').value;
-            const answer = document.getElementById('new-q-ans').value;
-            if(emoji && answer) {
-                db.ref('questions').push({emoji, answer});
-                document.getElementById('new-q-emoji').value = "";
-                document.getElementById('new-q-ans').value = "";
-            }
-        }
+        window.deleteQuestion = (id) => { if(confirm("刪除？")) db.ref('questions/'+id).remove(); };
 
-        function deleteQuestion(id) { if(confirm("確定刪除？")) db.ref('questions/' + id).remove(); }
-
-        document.getElementById('btn-join').onclick = () => {
+        bind('btn-join', () => {
             myName = document.getElementById('username').value.trim();
             if(!myName) return alert("請輸入姓名");
-            if(isHost) {
-                document.getElementById('host-global-tools').classList.remove('hidden');
-                goTo('view-setup');
-            } else { goTo('view-instruction'); }
-        };
+            if(isHost) { document.getElementById('host-global-tools').classList.remove('hidden'); goTo('view-setup'); }
+            else { goTo('view-instruction'); }
+        });
 
-        document.getElementById('btn-to-instruction').onclick = () => {
+        bind('btn-to-instruction', () => {
             goTo('view-instruction');
             if(isHost) document.getElementById('host-start-btn').classList.remove('hidden');
-        };
+        });
 
-        document.getElementById('btn-real-start').onclick = () => {
+        bind('btn-real-start', () => {
             const count = Math.min(parseInt(document.getElementById('q-count').value), localQuestions.length);
             const shuffled = localQuestions.sort(() => 0.5 - Math.random()).slice(0, count);
             db.ref('game').set({ status: 'playing', qs: shuffled, idx: 0, winner: "", show: false });
-        };
+        });
 
-        document.getElementById('btn-submit').onclick = () => {
+        bind('btn-submit', () => {
             const val = document.getElementById('ans-input').value.trim();
             if(!val) return;
             db.ref('game').once('value', snap => {
@@ -235,7 +246,38 @@
                     setTimeout(() => document.getElementById('feedback').innerText = "", 1500);
                 }
             });
-        };
+        });
+
+        bind('btn-reveal', () => db.ref('game/show').set(true));
+        bind('btn-next', () => {
+            db.ref('game').once('value', snap => {
+                const g = snap.val();
+                if(g.idx + 1 < g.qs.length) db.ref('game').update({idx: g.idx + 1, winner: "", show: false});
+                else db.ref('game/status').set('finished');
+            });
+        });
+
+        bind('btn-admin-qs', () => goTo('view-admin-qs'));
+        bind('btn-hard-reset', hardResetGame);
+        bind('btn-finish-reset', hardResetGame);
+        bind('btn-back-game', () => goTo('view-login'));
+        bind('btn-restore-qs', () => {
+            if(confirm("恢復34題預設？")) {
+                db.ref('questions').remove().then(() => {
+                    defaultQs.forEach(q => db.ref('questions').push(q));
+                    alert("已恢復");
+                });
+            }
+        });
+        bind('btn-add-q', () => {
+            const emoji = document.getElementById('new-q-emoji').value;
+            const answer = document.getElementById('new-q-ans').value;
+            if(emoji && answer) {
+                db.ref('questions').push({emoji, answer});
+                document.getElementById('new-q-emoji').value = "";
+                document.getElementById('new-q-ans').value = "";
+            }
+        });
 
         db.ref('game').on('value', snap => {
             const game = snap.val();
@@ -272,20 +314,10 @@
                     let list = [];
                     for(let k in ps) list.push({n: k, s: ps[k]});
                     list.sort((a,b) => b.s - a.s);
-                    let html = list.map((p, i) => `<tr><td class="lb-cell ${i==0?'top-1':''}">${i+1}</td><td class="lb-cell">${p.n}</td><td class="lb-cell">${p.s}</td></tr>`).join('');
-                    document.getElementById('leaderboard-body').innerHTML = html;
+                    document.getElementById('leaderboard-body').innerHTML = list.map((p, i) => `<tr><td class="lb-cell ${i==0?'top-1':''}">${i+1}</td><td class="lb-cell">${p.n}</td><td class="lb-cell">${p.s}</td></tr>`).join('');
                 });
             }
         });
-
-        document.getElementById('btn-reveal').onclick = () => db.ref('game/show').set(true);
-        document.getElementById('btn-next').onclick = () => {
-            db.ref('game').once('value', snap => {
-                const g = snap.val();
-                if(g.idx + 1 < g.qs.length) db.ref('game').update({idx: g.idx + 1, winner: "", show: false});
-                else db.ref('game/status').set('finished');
-            });
-        };
     </script>
 </body>
 </html>
