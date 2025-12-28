@@ -8,22 +8,22 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --primary: #6c5ce7; --accent: #fdcb6e; --danger: #ff7675; --success: #55efc4; --dark: #2d3436; }
-        body { font-family: 'PingFang TC', sans-serif; background: radial-gradient(circle, #6c5ce7 0%, #4834d4 100%); color: white; margin: 0; padding: 20px 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: radial-gradient(circle, #6c5ce7 0%, #4834d4 100%); color: white; margin: 0; padding: 20px 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .header-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .event-logo { width: 150px; height: 150px; object-fit: contain; }
         .event-title { font-size: 2.5rem; font-weight: 900; color: var(--accent); text-shadow: 3px 3px 0px #d35400; }
-        .card { background: white; color: var(--dark); padding: 30px; border-radius: 30px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; position: relative; }
+        .card { background: white; color: var(--dark); padding: 30px; border-radius: 30px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; }
         .hidden { display: none !important; }
+        .instruction-box { text-align: left; background: #f1f2f6; padding: 20px; border-radius: 15px; color: #444; line-height: 1.8; margin-bottom: 15px; font-size: 1rem; }
         .emoji-box { font-size: 80px; margin: 20px 0; min-height: 130px; display: flex; justify-content: center; align-items: center; background: #f1f2f6; border-radius: 20px; }
-        input, select { padding: 12px; font-size: 1.1rem; width: 80%; margin: 10px 0; border: 3px solid #dfe6e9; border-radius: 12px; text-align: center; }
+        input, select { padding: 12px; font-size: 1.1rem; width: 85%; margin: 10px 0; border: 3px solid #dfe6e9; border-radius: 12px; text-align: center; }
         button { background: var(--accent); color: #d35400; border: none; padding: 12px 25px; font-size: 1.1rem; border-radius: 50px; cursor: pointer; font-weight: 900; box-shadow: 0 5px 0 #e67e22; margin: 10px; }
         button:active { transform: translateY(3px); box-shadow: 0 2px 0 #e67e22; }
-        .host-fixed-tools { position: fixed; bottom: 15px; right: 15px; background: rgba(0, 0, 0, 0.85); padding: 15px; border-radius: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; border: 1px solid rgba(255,255,255,0.2); }
+        .host-fixed-tools { position: fixed; bottom: 15px; right: 15px; background: rgba(0, 0, 0, 0.85); padding: 15px; border-radius: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; }
         .btn-sm { font-size: 0.8rem; padding: 8px; margin: 0; }
         .lb-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .lb-cell { padding: 12px 5px; font-size: 1.1rem; border-bottom: 1px solid #eee; }
         .top-1 { color: #f1c40f; font-size: 1.5rem; font-weight: bold; }
-        /* 題庫管理樣式 */
         #view-admin-qs { color: var(--dark); text-align: left; max-height: 70vh; overflow-y: auto; }
         .q-item { border-bottom: 1px solid #ddd; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
     </style>
@@ -57,9 +57,11 @@
 
         <div id="view-instruction" class="hidden">
             <h2 style="color: var(--primary);">遊戲說明</h2>
-            <div style="text-align: left; background: #f1f2f6; padding: 15px; border-radius: 15px; font-size: 0.9rem; color: #444;">
-                👀 規則：同音字替換（如：👀=觀）<br>
-                💡 範例：👀🎵 ➔ <b>觀音</b> | ⬇️🏘️ ➔ <b>南庄</b>
+            <div class="instruction-box">
+                <b>遊戲說明：</b><br>
+                👀可能是「眼」、「睛」、「看」、「目」、「望」...等的同音字。<br>
+                範例題目：👀🎵 ➔ 答案：<b>觀音</b><br>
+                範例題目：⬇️🏘️ ➔ 答案：<b>南庄</b>
             </div>
             <img src="qrcode.png" alt="QR Code" class="qr-code" style="width:180px; margin:15px auto; display:block;" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(window.location.href.split('?')[0])">
             <div id="host-start-btn" class="hidden">
@@ -90,9 +92,7 @@
 
         <div id="view-result" class="hidden">
             <h2 style="color:var(--primary);">🏆 榮譽排行榜</h2>
-            <table class="lb-table">
-                <tbody id="leaderboard-body"></tbody>
-            </table>
+            <table class="lb-table"><tbody id="leaderboard-body"></tbody></table>
             <div id="host-reset-area" class="hidden">
                 <button onclick="hardResetGame()" style="background:#dfe6e9; color:#636e72; margin-top:30px;">🔄 結束並重置</button>
             </div>
@@ -106,7 +106,7 @@
                 <button onclick="addQuestion()" style="font-size:0.8rem; padding:5px 15px;">新增</button>
             </div>
             <div id="qs-list">載入題庫中...</div>
-            <button onclick="location.reload()" style="background:var(--dark); color:white; width:100%;">返回遊戲</button>
+            <button onclick="goTo('view-login')" style="background:var(--dark); color:white; width:100%;">返回遊戲</button>
         </div>
     </div>
 
@@ -126,6 +126,22 @@
         let myName = "";
         let localQuestions = [];
 
+        // 2. 預設 34 題題庫
+        const defaultQs = [
+            { emoji: "🐲 ♨️", answer: "龍潭" }, { emoji: "5️⃣⛰️", answer: "五峰" }, { emoji: "🔟0️⃣0️⃣0️⃣🌸", answer: "萬華" },
+            { emoji: "🪑橋", answer: "板橋" }, { emoji: "🆕🏠", answer: "新屋" }, { emoji: "🆕🛒", answer: "新店" },
+            { emoji: "3️⃣⛰️", answer: "三峽" }, { emoji: "🥇⛰️", answer: "金山" }, { emoji: "5️⃣🦴", answer: "五股" },
+            { emoji: "7️⃣🚧", answer: "七堵" }, { emoji: "💎⛰️", answer: "寶山" }, { emoji: "🦁 ♨️", answer: "獅潭" },
+            { emoji: "⬇️⚓", answer: "南港" }, { emoji: "🐘🤰", answer: "大肚" }, { emoji: "鹿🦌⚓", answer: "鹿港" },
+            { emoji: "2️⃣🌲", answer: "二林" }, { emoji: "2️⃣💧", answer: "二水" }, { emoji: "🎋⛰️", answer: "竹山" },
+            { emoji: "4️⃣♨️", answer: "四湖" }, { emoji: "🐘🌲", answer: "大林" }, { emoji: "🆕⚓", answer: "新港" },
+            { emoji: "6️⃣🦵", answer: "六腳" }, { emoji: "🦌🌱", answer: "鹿草" }, { emoji: "🧂💧", answer: "鹽水" },
+            { emoji: "3️⃣🧑‍🤝‍🧑", answer: "三民" }, { emoji: "🚩⛰️", answer: "旗山" }, { emoji: "6️⃣🐢", answer: "六龜" },
+            { emoji: "➡️⚓", answer: "東港" }, { emoji: "♾️🌸", answer: "恆春" }, { emoji: "🦁", answer: "獅子" },
+            { emoji: "🌺", answer: "牡丹" }, { emoji: "3️⃣⭐", answer: "三星" }, { emoji: "🐘⚔️", answer: "大武" },
+            { emoji: "7️⃣ 🧜", answer: "七美" }
+        ];
+
         function goTo(id) {
             document.querySelectorAll('.card > div').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
@@ -139,9 +155,13 @@
             }
         }
 
-        // 題庫系統邏輯
+        // 初始化題庫：如果為空則匯入預設題目
         db.ref('questions').on('value', snap => {
             const data = snap.val();
+            if(!data && isHost) {
+                defaultQs.forEach(q => db.ref('questions').push(q));
+                return;
+            }
             localQuestions = [];
             let html = "";
             for(let id in data) {
@@ -181,10 +201,26 @@
         };
 
         document.getElementById('btn-real-start').onclick = () => {
-            if(localQuestions.length === 0) return alert("題庫是空的，請先去維護題庫新增題目！");
             const count = Math.min(parseInt(document.getElementById('q-count').value), localQuestions.length);
             const shuffled = localQuestions.sort(() => 0.5 - Math.random()).slice(0, count);
             db.ref('game').set({ status: 'playing', qs: shuffled, idx: 0, winner: "", show: false });
+        };
+
+        // 3. 修正參賽者送出邏輯
+        document.getElementById('btn-submit').onclick = () => {
+            const val = document.getElementById('ans-input').value.trim();
+            if(!val) return;
+            db.ref('game').once('value', snap => {
+                const g = snap.val();
+                if(!g || g.winner) return;
+                if(val === g.qs[g.idx].answer) {
+                    db.ref('game/winner').set(myName);
+                    db.ref('players/' + myName).transaction(s => (s || 0) + 10);
+                } else {
+                    document.getElementById('feedback').innerText = "❌ 答錯了！";
+                    setTimeout(() => document.getElementById('feedback').innerText = "", 1500);
+                }
+            });
         };
 
         db.ref('game').on('value', snap => {
@@ -212,6 +248,7 @@
                     document.getElementById('win-notification').classList.add('hidden');
                     document.getElementById('ans-reveal').classList.add('hidden');
                     document.getElementById('host-actions').classList.add('hidden');
+                    document.getElementById('ans-input').value = "";
                 }
             } else if(game.status === 'finished') {
                 goTo('view-result');
@@ -226,17 +263,6 @@
                 });
             }
         });
-
-        document.getElementById('btn-submit').onclick = () => {
-            const val = document.getElementById('ans-input').value.trim();
-            db.ref('game').once('value', snap => {
-                const g = snap.val();
-                if(val === g.qs[g.idx].answer && !g.winner) {
-                    db.ref('game/winner').set(myName);
-                    db.ref('players/' + myName).transaction(s => (s || 0) + 10);
-                } else if(val) document.getElementById('feedback').innerText = "❌ 答錯了！";
-            });
-        };
 
         document.getElementById('btn-reveal').onclick = () => db.ref('game/show').set(true);
         document.getElementById('btn-next').onclick = () => {
