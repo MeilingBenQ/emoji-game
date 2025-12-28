@@ -9,9 +9,12 @@
     <style>
         :root { --primary: #6c5ce7; --accent: #fdcb6e; --danger: #ff7675; --success: #55efc4; --dark: #2d3436; }
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: radial-gradient(circle, #6c5ce7 0%, #4834d4 100%); color: white; margin: 0; padding: 20px 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .header-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        
+        /* 1. Logo 尺寸調整 */
+        .header-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
         .event-logo { width: 150px; height: 150px; object-fit: contain; }
-        .event-title { font-size: 2.5rem; font-weight: 900; color: var(--accent); text-shadow: 3px 3px 0px #d35400; }
+        .event-title { font-size: 2.5rem; font-weight: 900; color: var(--accent); text-shadow: 3px 3px 0px #d35400; margin: 0; }
+        
         .card { background: white; color: var(--dark); padding: 30px; border-radius: 30px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; }
         .hidden { display: none !important; }
         .instruction-box { text-align: left; background: #f1f2f6; padding: 20px; border-radius: 15px; color: #444; line-height: 1.8; margin-bottom: 15px; font-size: 1rem; }
@@ -26,6 +29,7 @@
         .top-1 { color: #f1c40f; font-size: 1.5rem; font-weight: bold; }
         #view-admin-qs { color: var(--dark); text-align: left; max-height: 70vh; overflow-y: auto; }
         .q-item { border-bottom: 1px solid #ddd; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .btn-restore { background: #95a5a6; color: white; box-shadow: 0 5px 0 #7f8c8d; font-size: 0.9rem; width: 100%; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -106,6 +110,9 @@
                 <button onclick="addQuestion()" style="font-size:0.8rem; padding:5px 15px;">新增</button>
             </div>
             <div id="qs-list">載入題庫中...</div>
+            
+            <button class="btn-restore" onclick="restoreDefaultQuestions()">♻️ 恢復預設題庫 (34題)</button>
+            
             <button onclick="goTo('view-login')" style="background:var(--dark); color:white; width:100%;">返回遊戲</button>
         </div>
     </div>
@@ -126,17 +133,16 @@
         let myName = "";
         let localQuestions = [];
 
-        // 2. 預設 34 題題庫
         const defaultQs = [
             { emoji: "🐲 ♨️", answer: "龍潭" }, { emoji: "5️⃣⛰️", answer: "五峰" }, { emoji: "🔟0️⃣0️⃣0️⃣🌸", answer: "萬華" },
             { emoji: "🪑橋", answer: "板橋" }, { emoji: "🆕🏠", answer: "新屋" }, { emoji: "🆕🛒", answer: "新店" },
             { emoji: "3️⃣⛰️", answer: "三峽" }, { emoji: "🥇⛰️", answer: "金山" }, { emoji: "5️⃣🦴", answer: "五股" },
-            { emoji: "7️⃣🚧", answer: "七堵" }, { emoji: "💎⛰️", answer: "寶山" }, { emoji: "🦁 ♨️", answer: "獅潭" },
+            { emoji: "7️⃣🚧", answer: "七堵" }, { emoji: "💎⛰️", answer: "寶山" }, { emoji: "獅🦁 ♨️", answer: "獅潭" },
             { emoji: "⬇️⚓", answer: "南港" }, { emoji: "🐘🤰", answer: "大肚" }, { emoji: "鹿🦌⚓", answer: "鹿港" },
             { emoji: "2️⃣🌲", answer: "二林" }, { emoji: "2️⃣💧", answer: "二水" }, { emoji: "🎋⛰️", answer: "竹山" },
             { emoji: "4️⃣♨️", answer: "四湖" }, { emoji: "🐘🌲", answer: "大林" }, { emoji: "🆕⚓", answer: "新港" },
-            { emoji: "6️⃣🦵", answer: "六腳" }, { emoji: "🦌🌱", answer: "鹿草" }, { emoji: "🧂💧", answer: "鹽水" },
-            { emoji: "3️⃣🧑‍🤝‍🧑", answer: "三民" }, { emoji: "🚩⛰️", answer: "旗山" }, { emoji: "6️⃣🐢", answer: "六龜" },
+            { emoji: "6️⃣🦵", answer: "六腳" }, { emoji: "鹿🦌🌱", answer: "鹿草" }, { emoji: "🧂💧", answer: "鹽水" },
+            { emoji: "3️⃣🧑‍🤝‍🧑", answer: "三民" }, { emoji: "旗🚩🖌️", answer: "旗山" }, { emoji: "6️⃣🐢", answer: "六龜" },
             { emoji: "➡️⚓", answer: "東港" }, { emoji: "♾️🌸", answer: "恆春" }, { emoji: "🦁", answer: "獅子" },
             { emoji: "🌺", answer: "牡丹" }, { emoji: "3️⃣⭐", answer: "三星" }, { emoji: "🐘⚔️", answer: "大武" },
             { emoji: "7️⃣ 🧜", answer: "七美" }
@@ -155,7 +161,16 @@
             }
         }
 
-        // 初始化題庫：如果為空則匯入預設題目
+        // 2. 恢復預設題庫邏輯
+        function restoreDefaultQuestions() {
+            if(confirm("這將刪除目前所有題目並恢復為原本的 34 題，確定嗎？")) {
+                db.ref('questions').remove().then(() => {
+                    defaultQs.forEach(q => db.ref('questions').push(q));
+                    alert("題庫已恢復預設！");
+                });
+            }
+        }
+
         db.ref('questions').on('value', snap => {
             const data = snap.val();
             if(!data && isHost) {
@@ -206,7 +221,6 @@
             db.ref('game').set({ status: 'playing', qs: shuffled, idx: 0, winner: "", show: false });
         };
 
-        // 3. 修正參賽者送出邏輯
         document.getElementById('btn-submit').onclick = () => {
             const val = document.getElementById('ans-input').value.trim();
             if(!val) return;
