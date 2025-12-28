@@ -17,9 +17,20 @@
             touch-action: manipulation;
         }
         
-        .header-container { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 15px; }
+        .header-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 15px; width: 100%; }
         .event-logo { width: 150px; height: 150px; object-fit: contain; }
-        .event-title { font-size: 2rem; font-weight: 900; color: var(--accent); text-shadow: 2px 2px 0px #d35400; margin: 0; }
+        
+        /* 標題自動縮放核心 CSS */
+        .event-title { 
+            font-size: clamp(1.2rem, 5.5vw, 2.5rem); 
+            font-weight: 900; 
+            color: var(--accent); 
+            text-shadow: 2px 2px 0px #d35400; 
+            margin: 0; 
+            white-space: nowrap; 
+            width: 95%; 
+            text-align: center;
+        }
         
         .card { 
             background: white; color: var(--dark); padding: 20px; 
@@ -139,7 +150,7 @@
                 <button id="btn-add-q" style="font-size:0.9rem; padding:10px;">新增</button>
             </div>
             <div id="qs-list" style="max-height: 250px; overflow-y: auto; color: #2d3436; text-align: left;">載入中...</div>
-            <button id="btn-restore-qs" style="background: #95a5a6; color: white; width: 100%; font-size: 0.9rem; margin-top:10px;">♻️ 恢復預設題庫</button>
+            <button id="btn-restore-qs" style="background: #95a5a6; color: white; width: 100%; font-size: 0.9rem; margin-top:10px;">♻️ 恢復預設題庫 (34題)</button>
             <button id="btn-back-game" style="background:var(--dark); color:white; width:100%;">返回</button>
         </div>
     </div>
@@ -160,7 +171,6 @@
         let myName = "";
         let localQuestions = [];
 
-        // 初始化檢查是否為主持人介面
         if (isHost) {
             document.getElementById('host-global-tools').classList.remove('hidden');
             document.getElementById('login-title').innerText = "🔑 主持人登入";
@@ -213,19 +223,11 @@
         bind('btn-join', () => {
             const userInput = document.getElementById('username').value.trim();
             if(!userInput) return alert("請輸入內容");
-
             if(isHost) {
-                // 主持人密碼驗證
-                if(userInput === "00000") {
-                    myName = "管理員";
-                    goTo('view-setup');
-                } else {
-                    alert("管理員密碼錯誤！");
-                }
+                if(userInput === "00000") { myName = "管理員"; goTo('view-setup'); } 
+                else { alert("管理員密碼錯誤！"); }
             } else {
-                // 一般參賽者
-                myName = userInput;
-                goTo('view-instruction');
+                myName = userInput; goTo('view-instruction');
             }
         });
 
