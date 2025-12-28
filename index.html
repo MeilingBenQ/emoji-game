@@ -18,7 +18,7 @@
         }
         
         .header-container { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-bottom: 15px; }
-        .event-logo { width: 120px; height: 120px; object-fit: contain; }
+        .event-logo { width: 150px; height: 150px; object-fit: contain; }
         .event-title { font-size: 2rem; font-weight: 900; color: var(--accent); text-shadow: 2px 2px 0px #d35400; margin: 0; }
         
         .card { 
@@ -29,11 +29,11 @@
         }
         
         .hidden { display: none !important; }
-        .instruction-box { text-align: left; background: #f1f2f6; padding: 15px; border-radius: 12px; color: #444; line-height: 1.6; margin-bottom: 15px; font-size: 0.95rem; }
+        .instruction-box { text-align: left; background: #f1f2f6; padding: 20px; border-radius: 12px; color: #444; line-height: 1.8; margin-bottom: 15px; font-size: 1rem; }
         .emoji-box { font-size: 70px; margin: 15px 0; min-height: 120px; display: flex; justify-content: center; align-items: center; background: #f1f2f6; border-radius: 15px; }
         
         input, select { 
-            padding: 15px; font-size: 1rem; width: 90%; margin: 10px 0; 
+            padding: 15px; font-size: 1.1rem; width: 90%; margin: 10px 0; 
             border: 2px solid #dfe6e9; border-radius: 10px; text-align: center;
             appearance: none; -webkit-appearance: none;
         }
@@ -46,19 +46,18 @@
         }
         button:active { transform: translateY(3px); box-shadow: 0 2px 0 #e67e22; }
 
-        /* 關鍵修正：確保管理面板絕對處於最上層 */
         .host-fixed-tools { 
             position: fixed; bottom: 20px; right: 20px; 
             background: rgba(0, 0, 0, 0.95); padding: 15px; border-radius: 20px; 
             display: flex; flex-direction: column; gap: 10px; 
-            z-index: 99999 !important; /* 最高層級 */
+            z-index: 99999 !important; 
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.2);
         }
         .btn-sm { font-size: 0.85rem; padding: 12px; margin: 0; min-width: 120px; box-shadow: 0 3px 0 #333; }
         
         .lb-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .lb-cell { padding: 10px 5px; font-size: 1rem; border-bottom: 1px solid #eee; }
+        .lb-cell { padding: 12px 5px; font-size: 1rem; border-bottom: 1px solid #eee; }
         .top-1 { color: #f1c40f; font-size: 1.3rem; font-weight: bold; }
     </style>
 </head>
@@ -77,8 +76,8 @@
 
     <div class="card">
         <div id="view-login">
-            <h2 style="color: var(--primary); margin-top: 0;">歡迎參加！</h2>
-            <input type="text" id="username" placeholder="請輸入姓名" inputmode="text">
+            <h2 id="login-title" style="color: var(--primary); margin-top: 0;">準備好搶答了嗎？</h2>
+            <input type="text" id="username" placeholder="請輸入姓名">
             <button id="btn-join">下一頁</button>
         </div>
 
@@ -161,24 +160,25 @@
         let myName = "";
         let localQuestions = [];
 
-        // 核心修正：一進入腳本就檢查是否為 Host
+        // 初始化檢查是否為主持人介面
         if (isHost) {
-            const hostPanel = document.getElementById('host-global-tools');
-            if (hostPanel) hostPanel.classList.remove('hidden');
+            document.getElementById('host-global-tools').classList.remove('hidden');
+            document.getElementById('login-title').innerText = "🔑 主持人登入";
+            document.getElementById('username').placeholder = "請輸入管理員密碼";
         }
 
         const defaultQs = [
             { emoji: "🐲 ♨️", answer: "龍潭" }, { emoji: "5️⃣⛰️", answer: "五峰" }, { emoji: "🔟0️⃣0️⃣0️⃣🌸", answer: "萬華" },
-            { emoji: "🪑橋", answer: "板橋" }, { emoji: "🆕🏠", answer: "新屋" }, { emoji: "🆕🛒", answer: "新店" },
+            { emoji: "🐢⛰️", answer: "龜山" }, { emoji: "🆕🏠", answer: "新屋" }, { emoji: "🆕🛒", answer: "新店" },
             { emoji: "3️⃣⛰️", answer: "三峽" }, { emoji: "🥇⛰️", answer: "金山" }, { emoji: "5️⃣🦴", answer: "五股" },
-            { emoji: "7️⃣🚧", answer: "七堵" }, { emoji: "💎⛰️", answer: "寶山" }, { emoji: "獅🦁 ♨️", answer: "獅潭" },
-            { emoji: "⬇️⚓", answer: "南港" }, { emoji: "象🐘🤰", answer: "大肚" }, { emoji: "鹿🦌⚓", answer: "鹿港" },
+            { emoji: "7️⃣🚧", answer: "七堵" }, { emoji: "💎⛰️", answer: "寶山" }, { emoji: "🦁 ♨️", answer: "獅潭" },
+            { emoji: "⬇️⚓", answer: "南港" }, { emoji: "🐘🤰", answer: "大肚" }, { emoji: "🦌⚓", answer: "鹿港" },
             { emoji: "2️⃣🌲", answer: "二林" }, { emoji: "2️⃣💧", answer: "二水" }, { emoji: "🎋⛰️", answer: "竹山" },
-            { emoji: "4️⃣♨️", answer: "四湖" }, { emoji: "象🐘🌲", answer: "大林" }, { emoji: "🆕⚓", answer: "新港" },
-            { emoji: "6️⃣🦵", answer: "六腳" }, { emoji: "鹿🦌🌱", answer: "鹿草" }, { emoji: "🧂💧", answer: "鹽水" },
-            { emoji: "3️⃣🧑‍🤝‍🧑", answer: "三民" }, { emoji: "旗🚩🖌️", answer: "旗山" }, { emoji: "6️⃣🐢", answer: "六龜" },
+            { emoji: "4️⃣♨️", answer: "四湖" }, { emoji: "🐘🌲", answer: "大林" }, { emoji: "🆕⚓", answer: "新港" },
+            { emoji: "6️⃣🦵", answer: "六腳" }, { emoji: "🦌🌱", answer: "鹿草" }, { emoji: "🧂💧", answer: "鹽水" },
+            { emoji: "3️⃣🧑‍🤝‍🧑", answer: "三民" }, { emoji: "🚩🖌️", answer: "旗山" }, { emoji: "6️⃣🐢", answer: "六龜" },
             { emoji: "➡️⚓", answer: "東港" }, { emoji: "♾️🌸", answer: "恆春" }, { emoji: "🦁", answer: "獅子" },
-            { emoji: "🌺", answer: "牡丹" }, { emoji: "3️⃣⭐", answer: "三星" }, { emoji: "象🐘⚔️", answer: "大武" },
+            { emoji: "🌺", answer: "牡丹" }, { emoji: "3️⃣⭐", answer: "三星" }, { emoji: "🐘⚔️", answer: "大武" },
             { emoji: "7️⃣ 🧜", answer: "七美" }
         ];
 
@@ -211,10 +211,22 @@
         window.deleteQuestion = (id) => { if(confirm("確定刪除？")) db.ref('questions/'+id).remove(); };
 
         bind('btn-join', () => {
-            myName = document.getElementById('username').value.trim();
-            if(!myName) return alert("請輸入姓名");
-            if(isHost) goTo('view-setup');
-            else goTo('view-instruction');
+            const userInput = document.getElementById('username').value.trim();
+            if(!userInput) return alert("請輸入內容");
+
+            if(isHost) {
+                // 主持人密碼驗證
+                if(userInput === "00000") {
+                    myName = "管理員";
+                    goTo('view-setup');
+                } else {
+                    alert("管理員密碼錯誤！");
+                }
+            } else {
+                // 一般參賽者
+                myName = userInput;
+                goTo('view-instruction');
+            }
         });
 
         bind('btn-to-instruction', () => {
